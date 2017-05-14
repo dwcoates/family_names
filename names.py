@@ -7,6 +7,7 @@ import pandas as pd
 import seaborn as sns
 import numpy as np
 from scipy.interpolate import spline
+from scipy.stats.mstats import zscore
 from pylab import rcParams
 
 YEAR_REG = re.compile("yob([0-9]+)\.txt")
@@ -20,7 +21,7 @@ def read_babies(filename):
                                     "count", ascending=False)
     return babynames
 
-def grab_names(filename):
+def grab_babies(filename):
     year = int(YEAR_REG.match(filename).group(1))
 
     babynames = read_babies(filename)
@@ -32,11 +33,33 @@ def grab_names(filename):
 
     return names
 
+
+def pivot_babies(babies):
+    return pd.pivot_table(babies, index=["year", "sex"],
+                              values="count",
+                              columns="name").fillna(0).applymap(int)
+
+def get_yearified_babies(filename):
+    babies = read_babies(filename)
+
+    year = int(YEAR_REG.match(filename).group(1))
+    babies["year"] = [year]*babies.index.size
+
+    return babies
+
+def squash_babies(baby_files):
+    "Get all baby names in baby_files, in wide format, each name a column."
+    babies = [get_yearified_babies(baby_file) for baby_file in baby_files]
+
+    return pivot_babies(pd.concat(babies))
+
 files = [y for y in os.listdir(DATA_DIR) if YEAR_REG.match(y)]
 
-data = pd.DataFrame(map(grab_names, files),
+data = pd.DataFrame(map(grab_babies, files),
                     columns=NAMES+["total", "year"]).set_index(
                         "year").sort_index()
+
+all_babies = squash_babies(files)
 
 def plot_names(name, smooth=True):
     """
