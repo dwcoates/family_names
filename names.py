@@ -52,5 +52,7 @@ plt.xlabel("Year")
 plt.xlim((1910, 2016))
 plt.show()
 
+plt.savefig("MeridaArlissDodge.png")
+
 # Total count of "Merida" if the movie "Brave" hadn't been made: ~402
 data[data.index < 2011].Merida.sum() + data[data.index < 2011].Merida.mean()*5
