@@ -1,10 +1,12 @@
 from __future__ import print_function
 
+import os
+import re
+
 import pandas as pd
 import seaborn as sns
 import numpy as np
-import os
-import re
+from scipy.interpolate import spline
 from pylab import rcParams
 
 YEAR_REG = re.compile("yob([0-9]+)\.txt")
@@ -36,24 +38,53 @@ data = pd.DataFrame(map(grab_names, files),
                     columns=NAMES+["total", "year"]).set_index(
                         "year").sort_index()
 
-def plot_names(name):
-    values = data[name]/data.total*100000 # percentage of population
+def plot_names(name, smooth=True):
+    """
+    Plot the names defined in NAMES. Interpolates by default with argument
+    smooth.
+    """
+    name_data = data[name]
+    index = data.index
+    total_data = data.total
+    if smooth:
+        # interpolate
+        new_index = np.linspace(index.min(), index.max(), 1000)
+        name_data = spline(index, name_data, new_index)
+        flatten = np.vectorize(lambda x: 0 if x <= 0 else x)
+        name_data = flatten(name_data)
+        total_data = spline(index, total_data, new_index)
+        index = new_index
+    values = name_data/total_data*100000 # percentage of population
     name_label = "{}\t\t({} total baby count)".format(name, data[name].sum()).expandtabs()
-    ax = plt.plot(data.index, values, lw=2, label=name_label)
-    plt.fill_between(data.index, 0, values, alpha =0.2)
+    ax = plt.plot(index, values, lw=2, label=name_label)
+    plt.fill_between(index, 0, values, alpha =0.2)
     return ax
 
 plt.clf()
-
 rcParams['figure.figsize'] = 16, 10
 sns.set_style("darkgrid")
 sns.set_palette(sns.color_palette("dark"))
+
+plt.figure(1)
+plt.subplot(211)
 map(plot_names, NAMES)
+plt.xlim((1910, 2016))
+plt.legend(loc="upper mid")
+plt.title("Baby name popularity over last 100 years (with popularity interpolated)")
+plt.ylabel("Number of Babies born (per 100,000)")
+plt.xlabel("Year")
+
+plt.figure(1)
+plt.subplot(212)
+map(lambda x: plot_names(x, smooth=False), NAMES)
+plt.title("Baby name popularity over last 100 years (raw data)")
 plt.legend(loc="upper mid")
 plt.ylabel("Number of Babies born (per 100,000)")
 plt.xlabel("Year")
 plt.xlim((1910, 2016))
-# plt.show()
+
+plt.show()
+
 plt.savefig("MeridaArlissDodge.png")
 
 # Total count of "Merida" if the movie "Brave" hadn't been made: ~402
