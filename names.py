@@ -5,7 +5,7 @@ import seaborn as sns
 import numpy as np
 import os
 import re
-
+from pylab import rcParams
 
 YEAR_REG = re.compile("yob([0-9]+)\.txt")
 DATA_DIR = os.path.abspath("./names_data")
@@ -40,9 +40,12 @@ def plot_names(name):
     values = data[name]/data.total*100000 # percentage of population
     name_label = "{}\t\t({} total baby count)".format(name, data[name].sum()).expandtabs()
     ax = plt.plot(data.index, values, lw=2, label=name_label)
-    plt.fill_between(data.index, 0, values, alpha=0.2)
+    plt.fill_between(data.index, 0, values, alpha =0.2)
     return ax
 
+plt.clf()
+
+rcParams['figure.figsize'] = 16, 10
 sns.set_style("darkgrid")
 sns.set_palette(sns.color_palette("dark"))
 map(plot_names, NAMES)
@@ -50,8 +53,7 @@ plt.legend(loc="upper mid")
 plt.ylabel("Number of Babies born (per 100,000)")
 plt.xlabel("Year")
 plt.xlim((1910, 2016))
-plt.show()
-
+# plt.show()
 plt.savefig("MeridaArlissDodge.png")
 
 # Total count of "Merida" if the movie "Brave" hadn't been made: ~402
