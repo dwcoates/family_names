@@ -11,7 +11,7 @@ from pylab import rcParams
 
 YEAR_REG = re.compile("yob([0-9]+)\.txt")
 DATA_DIR = os.path.abspath("./names_data")
-NAMES = ["Arliss", "Merida", "Dodge", "Dena", "Peter"]
+NAMES = ["Arliss", "Merida", "Dodge", "Alisa"]
 
 def read_babies(filename):
     babynames = pd.read_csv(os.path.join(DATA_DIR, filename),
@@ -83,9 +83,9 @@ plt.ylabel("Number of Babies born (per 100,000)")
 plt.xlabel("Year")
 plt.xlim((1910, 2016))
 
-plt.show()
+# plt.show()
 
-plt.savefig("PeterMomMeridaArlissDodge.png")
+plt.savefig("AlisaMeridaArlissDodge.png")
 
 # Total count of "Merida" if the movie "Brave" hadn't been made: ~402
 data[data.index < 2011].Merida.sum() + data[data.index < 2011].Merida.mean()*5
